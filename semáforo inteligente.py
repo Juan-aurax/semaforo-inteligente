@@ -68,9 +68,7 @@ def executar_semaforo(id_semaforo):
     print("🟡 AMARELO (5s)")
     print("🔴 VERMELHO (30s)")
 
-# ==========================
 # CENTRO NACIONAL
-# ==========================
 
 print("="*60)
 print("CENTRO NACIONAL DE CONTROLE DE TRÂNSITO")
