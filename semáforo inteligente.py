@@ -2,7 +2,11 @@
 from random import randint
 from time import sleep
 
-# TOPOLOGIA DA REDE
+# TOPOLOGIA DA REDE - ESTRUTURA HIERÁRQUICA DOS GERENCIADORES DE TRÂNSITO E SEMÁFOROS EM:
+# Nível Nacional
+# Nível Regional
+# Nível Estadual
+# Nível Municipal
 
 rede = {
     "Brasil": {
@@ -37,7 +41,7 @@ rede = {
 
 # FUNÇÕES DE IA DO SEMÁFORO
 
-def calcular_tempo_verde(fluxo):
+def calcular_tempo_verde(fluxo): # Ajusta o tempo verde com base no fluxo de veículos
     if fluxo < 20:
         return 20
     elif fluxo < 50:
@@ -47,10 +51,45 @@ def calcular_tempo_verde(fluxo):
     else:
         return 90
 
-def detectar_emergencia():
+def detectar_emergencia(): # Simula a detecção de uma emergência com uma chance de 5%
     return randint(1, 100) <= 5  # 5% de chance
 
-def executar_semaforo(id_semaforo):
+
+def verificar_configuracao(rede): # Verifica as configurações de rede para garantir que estão corretas
+    if not isinstance(rede, dict):
+        return False
+    if "Brasil" not in rede or not isinstance(rede["Brasil"], dict):
+        return False
+    for regiao, estados in rede["Brasil"].items():
+        if not isinstance(estados, dict):
+            return False
+        for estado, municipios in estados.items():
+            if not isinstance(municipios, dict):
+                return False
+            for semaforos in municipios.values():
+                if not isinstance(semaforos, list):
+                    return False
+    return True
+
+
+def menu_erro_gerenciador(): # Caso haja um erro na configuração do gerenciador, apresenta um menu para o usuário escolher entre reiniciar ou parar o programa
+    print("\nERRO: configuração de gerenciador inválida ou faltando.")
+    print("Escolha uma opção:")
+    print("1. Reiniciar o programa")
+    print("2. Parar o programa")
+    while True: # Loop para caso a opção sejáo inválida, o usuário possa tentar novamente
+        opcao = input("Digite 1 ou 2: ").strip()
+        if opcao == "1":
+            print("Reiniciando o programa...\n")
+            return True
+        elif opcao == "2":
+            print("Parando o programa.")
+            return False
+        else:
+            print("Opção inválida. Tente novamente.")
+
+
+def executar_semaforo(id_semaforo): # Executa o semáfaro e detecta emergências para ajustar o tempo verde
     fluxo = randint(5, 150)
 
     if detectar_emergencia():
@@ -70,39 +109,47 @@ def executar_semaforo(id_semaforo):
 
 # CENTRO NACIONAL
 
-print("="*60)
-print("CENTRO NACIONAL DE CONTROLE DE TRÂNSITO")
-print("="*60)
+while True: # Loop principal do programa para simular o funcionamento contínuo do sistema de semáforos inteligentes
+    if not verificar_configuracao(rede):
+        if not menu_erro_gerenciador():
+            break
+        continue
 
-for regiao, estados in rede["Brasil"].items():
+    print("="*60)
+    print("CENTRO NACIONAL DE CONTROLE DE TRÂNSITO")
+    print("="*60)
 
-    print(f"\nREGIÃO: {regiao}")
+    for regiao, estados in rede["Brasil"].items(): # Verifica cada região e estados para monitorar o fluxo de veículos e ajustar os semáforos
 
-    for estado, municipios in estados.items():
+        print(f"\nREGIÃO: {regiao}")
 
-        fluxo_estado = 0
+        for estado, municipios in estados.items(): # Verfica cada estado e municípios para monitorar o fluxo de veículos e ajustar os semáforos
 
-        print(f"  ESTADO: {estado}")
+            fluxo_estado = 0
 
-        for municipio, semaforos in municipios.items():
+            print(f"  ESTADO: {estado}")
 
-            fluxo_municipio = randint(100, 1000)
-            fluxo_estado += fluxo_municipio
+            for municipio, semaforos in municipios.items(): # Verifica cada município e semáforos para monitorar o fluxo de veículos e ajustar os semáforos
 
-            print(f"\n    MUNICÍPIO: {municipio}")
-            print(f"    Fluxo Municipal: {fluxo_municipio}")
+                fluxo_municipio = randint(100, 1000)
+                fluxo_estado += fluxo_municipio
 
-            if fluxo_municipio > 700:
-                print("    ALERTA: congestionamento detectado")
-                print("    Ação: aumentar tempo verde em vias principais")
+                print(f"\n    MUNICÍPIO: {municipio}")
+                print(f"    Fluxo Municipal: {fluxo_municipio}")
 
-            for semaforo in semaforos:
-                executar_semaforo(semaforo)
+                if fluxo_municipio > 700:
+                    print("    ALERTA: congestionamento detectado")
+                    print("    Ação: aumentar tempo verde em vias principais")
 
-        print(f"\n  Fluxo Total do Estado: {fluxo_estado}")
+                for semaforo in semaforos: # Verifica cada semáforo para monitorar o fluxo de veículos e ajustar os semáforos
+                    executar_semaforo(semaforo)
 
-        if fluxo_estado > 1500:
-            print("  DECISÃO ESTADUAL:")
-            print("  -> Sincronizar semáforos dos municípios")
-            print("  -> Priorizar corredores de ônibus")
-            print("  -> Gerar alerta para centro regional")
+            print(f"\n  Fluxo Total do Estado: {fluxo_estado}")
+
+            if fluxo_estado > 1500:
+                print("  DECISÃO ESTADUAL:")
+                print("  -> Sincronizar semáforos dos municípios")
+                print("  -> Priorizar corredores de ônibus")
+                print("  -> Gerar alerta para centro regional")
+
+    sleep(5)  # pausa antes da próxima rodada
