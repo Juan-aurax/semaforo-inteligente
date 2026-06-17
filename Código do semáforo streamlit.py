@@ -469,4 +469,3 @@ for regiao, estados in rede["Brasil"].items():
 
         # Linha divisória entre estados
         st.divider()
-```
