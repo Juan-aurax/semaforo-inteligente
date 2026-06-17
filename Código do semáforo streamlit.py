@@ -4,9 +4,11 @@
 # streamlit: cria a interface web do sistema.
 # pandas: organiza os dados em tabelas.
 # randint: gera valores aleatórios para simular o trânsito.
+# time: tempo para automatizar o código
 import streamlit as st
 import pandas as pd
 from random import randint
+import time
 
 # ==========================================================
 # CONFIGURAÇÃO DA PÁGINA
@@ -18,6 +20,10 @@ st.set_page_config(
     page_icon="🚦",
     layout="wide"
 )
+
+# Controle automático da simulação
+if "executando" not in st.session_state:
+    st.session_state.executando = False
 
 # ==========================================================
 # ESTILOS DA INTERFACE (CSS)
@@ -248,9 +254,11 @@ st.write(
 st.sidebar.header("⚙️ Controle")
 
 # Botão para iniciar a simulação.
-executar = st.sidebar.button(
-    "▶ Executar Simulação"
-)
+if st.sidebar.button("▶ Iniciar Simulação"):
+    st.session_state.executando = True
+
+if st.sidebar.button("⏹ Parar Simulação"):
+    st.session_state.executando = False
 
 # Exibe a estrutura da rede.
 with st.sidebar.expander("🌎 Topologia da Rede"):
@@ -274,8 +282,8 @@ if not verificar_configuracao(rede):
 # AGUARDA O INÍCIO DA SIMULAÇÃO
 # ==========================================================
 # O programa só continua após o clique.
-if not executar:
-
+if not st.session_state.executando:
+    
     st.info(
         "Clique em **Executar Simulação** "
         "para iniciar o monitoramento."
@@ -461,3 +469,8 @@ for regiao, estados in rede["Brasil"].items():
 
         # Linha divisória entre estados
         st.divider()
+        
+# Atualização automática a cada 20 segundos
+if st.session_state.executando:
+    time.sleep(20)
+    st.rerun()
