@@ -92,7 +92,7 @@ def menu_erro_gerenciador(): # Caso haja um erro na configuração do gerenciado
 def executar_semaforo(id_semaforo): # Executa o semáfaro e detecta emergências para ajustar o tempo verde
     fluxo = randint(5, 150)
 
-    if detectar_emergencia():
+    if detectar_emergencia(): 
         estado = "EMERGÊNCIA"
         tempo_verde = 120
     else:
