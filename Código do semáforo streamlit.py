@@ -1,23 +1,19 @@
+```python
 # ==========================================================
-# app.py - PARTE 1
+# IMPORTAÇÃO DAS BIBLIOTECAS
 # ==========================================================
-# Centro Nacional de Controle de Trânsito
-# Sistema Inteligente de Gerenciamento de Semáforos
-
+# streamlit: cria a interface web do sistema.
+# pandas: organiza os dados em tabelas.
+# randint: gera valores aleatórios para simular o trânsito.
 import streamlit as st
 import pandas as pd
 from random import randint
-import time
 
 # ==========================================================
 # CONFIGURAÇÃO DA PÁGINA
 # ==========================================================
-# Define:
-# - Título exibido na aba do navegador;
-# - Ícone da aplicação;
-# - Layout amplo para aproveitar melhor a tela.
-# ==========================================================
-
+# Define o título exibido na aba do navegador,
+# o ícone e o tipo de layout utilizado.
 st.set_page_config(
     page_title="Centro Nacional de Controle de Trânsito",
     page_icon="🚦",
@@ -25,22 +21,14 @@ st.set_page_config(
 )
 
 # ==========================================================
-# ESTILOS (CSS)
+# ESTILOS DA INTERFACE (CSS)
 # ==========================================================
-# Personalização visual do sistema.
-#
-# Cada classe representa um nível hierárquico:
-#
-# brasil     → Centro Nacional
-# regiao     → Região do país
-# estado     → Estado
-# municipio  → Município
-#
-# ==========================================================
-
+# Utiliza CSS para personalizar a aparência do sistema.
+# Cada classe será aplicada em diferentes partes do painel.
 st.markdown("""
 <style>
 
+/* Cabeçalho principal do Brasil */
 .brasil {
     background-color: #0B3D91;
     color: white;
@@ -51,6 +39,7 @@ st.markdown("""
     text-align: center;
 }
 
+/* Título das regiões */
 .regiao {
     background-color: #2E8B57;
     color: white;
@@ -61,6 +50,7 @@ st.markdown("""
     margin-top: 20px;
 }
 
+/* Título dos estados */
 .estado {
     background-color: #FF8C00;
     color: white;
@@ -71,12 +61,24 @@ st.markdown("""
     margin-top: 15px;
 }
 
+/* Cartão de informações do município */
+.card-municipio {
+    border: 2px solid #8A2BE2;
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    background-color: rgba(138, 43, 226, 0.05);
+}
+
+/* Nome do município */
 .municipio {
     color: #8A2BE2;
     font-size: 22px;
     font-weight: bold;
 }
 
+/* Texto auxiliar */
 .small-text {
     color: gray;
     font-size: 14px;
@@ -88,71 +90,42 @@ st.markdown("""
 # ==========================================================
 # TOPOLOGIA DA REDE
 # ==========================================================
-# Estrutura hierárquica do sistema.
+# Estrutura hierárquica do sistema:
 #
 # Brasil
-# └── Região
-#     └── Estado
-#         └── Município
-#             └── Semáforos
+# └─ Região
+#    └─ Estado
+#       └─ Município
+#          └─ Semáforos
 #
-# Cada semáforo possui um identificador único.
-# ==========================================================
-
+# Essa organização representa como os dados
+# seriam distribuídos em um sistema nacional.
 rede = {
     "Brasil": {
         "Sudeste": {
-
             "São Paulo": {
-
-                "Campinas": [
-                    "CAMP-001",
-                    "CAMP-002"
-                ],
-
-                "Santos": [
-                    "SANTOS-001",
-                    "SANTOS-002"
-                ]
+                "Campinas": ["CAMP-001", "CAMP-002"],
+                "Santos": ["SANTOS-001", "SANTOS-002"]
             },
-
             "Rio de Janeiro": {
-
-                "Rio de Janeiro": [
-                    "RIO-001",
-                    "RIO-002"
-                ]
+                "Rio de Janeiro": ["RIO-001", "RIO-002"]
             }
         },
-
         "Sul": {
-
             "Paraná": {
-
-                "Curitiba": [
-                    "CUR-001",
-                    "CUR-002"
-                ]
+                "Curitiba": ["CUR-001", "CUR-002"]
             }
         }
     }
 }
 
 # ==========================================================
-# FUNÇÃO: calcular_tempo_verde
+# FUNÇÃO: CALCULAR TEMPO VERDE
 # ==========================================================
-# Responsável por definir automaticamente o
-# tempo do sinal verde com base no fluxo detectado.
+# Define o tempo do sinal verde de acordo
+# com o fluxo de veículos detectado.
 #
-# Quanto maior o fluxo,
-# maior será o tempo do sinal verde.
-#
-# Fluxo < 20     → 20 segundos
-# Fluxo < 50     → 40 segundos
-# Fluxo < 100    → 60 segundos
-# Fluxo ≥ 100    → 90 segundos
-# ==========================================================
-
+# Quanto maior o fluxo, maior o tempo verde.
 def calcular_tempo_verde(fluxo):
 
     if fluxo < 20:
@@ -169,36 +142,25 @@ def calcular_tempo_verde(fluxo):
 
 
 # ==========================================================
-# FUNÇÃO: detectar_emergencia
+# FUNÇÃO: DETECTAR EMERGÊNCIA
 # ==========================================================
-# Simula a detecção de veículos prioritários,
-# como ambulâncias, bombeiros ou polícia.
+# Simula a passagem de veículos prioritários.
 #
-# Foi adotada uma probabilidade de 5%.
-#
-# Retorna:
-# True  → emergência detectada
-# False → situação normal
-# ==========================================================
-
+# Existe aproximadamente 5% de chance de ocorrer
+# uma situação de emergência.
 def detectar_emergencia():
 
     return randint(1, 100) <= 5
 
 
 # ==========================================================
-# FUNÇÃO: verificar_configuracao
+# FUNÇÃO: VERIFICAR CONFIGURAÇÃO DA REDE
 # ==========================================================
-# Verifica se a estrutura da rede está correta.
+# Garante que a estrutura da topologia
+# esteja corretamente organizada.
 #
-# O objetivo é evitar que o sistema execute
-# utilizando uma topologia inválida.
-#
-# Retorna:
-# True  → configuração válida
-# False → configuração inválida
-# ==========================================================
-
+# Retorna True se estiver correta
+# e False caso exista algum erro.
 def verificar_configuracao(rede):
 
     if not isinstance(rede, dict):
@@ -226,46 +188,40 @@ def verificar_configuracao(rede):
 
 
 # ==========================================================
-# FUNÇÃO: executar_semaforo
+# FUNÇÃO: EXECUTAR SEMÁFORO
 # ==========================================================
-# Simula o funcionamento de um semáforo.
+# Simula o funcionamento individual
+# de cada semáforo do sistema.
 #
 # Etapas:
-# 1. Gera o fluxo de veículos;
-# 2. Verifica se há emergência;
-# 3. Ajusta automaticamente o tempo verde;
-# 4. Retorna os dados para o painel.
-#
-# Retorna um dicionário contendo:
-# - Identificação do semáforo;
-# - Fluxo detectado;
-# - Modo de operação;
-# - Tempos dos sinais;
-# - Informação sobre emergência.
-# ==========================================================
-
+# 1. Gera um fluxo aleatório;
+# 2. Verifica emergência;
+# 3. Define o modo de operação;
+# 4. Retorna os dados do ciclo.
 def executar_semaforo(id_semaforo):
 
-    # Simula o fluxo detectado pelo sensor.
+    # Quantidade simulada de veículos
     fluxo = randint(5, 150)
 
-    # Verifica emergência.
+    # Verifica emergência
     emergencia = detectar_emergencia()
 
-    # Caso exista emergência,
-    # o tempo verde é ampliado.
+    # Define o comportamento do semáforo
     if emergencia:
 
         modo = "🚑 Emergência"
+
+        # Prioridade máxima
         tempo_verde = 120
 
     else:
 
         modo = "🟢 Normal"
+
         tempo_verde = calcular_tempo_verde(fluxo)
 
+    # Retorna todos os dados
     return {
-
         "Semáforo": id_semaforo,
         "Fluxo": fluxo,
         "Modo": modo,
@@ -276,70 +232,76 @@ def executar_semaforo(id_semaforo):
     }
 
 
-# Título principal da aplicação
+# ==========================================================
+# INTERFACE PRINCIPAL
+# ==========================================================
+# Exibe o título e descrição do sistema.
 st.title("🚦 Centro Nacional de Controle de Trânsito")
 
-# Descrição do sistema
-st.write("Sistema Inteligente de Gerenciamento de Semáforos")
+st.write(
+    "Sistema Inteligente de Gerenciamento de Semáforos"
+)
 
 # ==========================================================
-# SIDEBAR (MENU LATERAL)
+# MENU LATERAL
 # ==========================================================
-# Contém os controles principais do sistema.
-# ==========================================================
-
+# Área destinada aos controles do operador.
 st.sidebar.header("⚙️ Controle")
 
-# Botão responsável por executar uma nova simulação.
-# Cada clique gera novos fluxos e novos resultados.
-executar = st.sidebar.button("▶ Executar Simulação")
+# Botão para iniciar a simulação.
+executar = st.sidebar.button(
+    "▶ Executar Simulação"
+)
 
-# ==========================================================
-# ATUALIZAÇÃO AUTOMÁTICA
-# ==========================================================
-# O painel permanecerá executando continuamente,
-# recarregando os dados a cada 20 segundos.
-# ==========================================================
-
-st.sidebar.success("🟢 Monitoramento em tempo real")
-
-st.sidebar.write("Atualização automática: 20 segundos")
-
-# Exibe a topologia da rede na barra lateral.
+# Exibe a estrutura da rede.
 with st.sidebar.expander("🌎 Topologia da Rede"):
+
     st.json(rede)
 
-# Aguarda 20 segundos e recarrega a página automaticamente.
-time.sleep(20)
-st.rerun()
 
 # ==========================================================
-# NÍVEL NACIONAL
+# VALIDAÇÃO DA REDE
 # ==========================================================
-# Representa o Centro Nacional de Controle.
-# ==========================================================
+# Interrompe o sistema caso a topologia
+# esteja configurada incorretamente.
+if not verificar_configuracao(rede):
 
+    st.error("❌ Configuração da rede inválida.")
+
+    st.stop()
+
+
+# ==========================================================
+# AGUARDA O INÍCIO DA SIMULAÇÃO
+# ==========================================================
+# O programa só continua após o clique.
+if not executar:
+
+    st.info(
+        "Clique em **Executar Simulação** "
+        "para iniciar o monitoramento."
+    )
+
+    st.stop()
+
+
+# ==========================================================
+# CABEÇALHO NACIONAL
+# ==========================================================
 st.markdown(
     '<div class="brasil">🇧🇷 BRASIL</div>',
     unsafe_allow_html=True
 )
 
-# ==========================================================
-# PROCESSAMENTO DA HIERARQUIA
-# ==========================================================
-# Brasil
-# └── Região
-#     └── Estado
-#         └── Município
-#             └── Semáforo
-# ==========================================================
 
+# ==========================================================
+# PROCESSAMENTO DOS DADOS
+# ==========================================================
+# Percorre toda a estrutura da rede,
+# simulando cada semáforo.
 for regiao, estados in rede["Brasil"].items():
 
-    # ======================================================
-    # REGIÃO
-    # ======================================================
-
+    # Exibe a região atual
     st.markdown(
         f'<div class="regiao">🌎 REGIÃO: {regiao}</div>',
         unsafe_allow_html=True
@@ -347,12 +309,7 @@ for regiao, estados in rede["Brasil"].items():
 
     for estado, municipios in estados.items():
 
-        # ==================================================
-        # ESTADO
-        # ==================================================
-        # Variáveis acumuladoras estaduais.
-        # ==================================================
-
+        # Acumuladores estaduais
         fluxo_estado = 0
         total_emergencias_estado = 0
         total_semaforos_estado = 0
@@ -365,26 +322,19 @@ for regiao, estados in rede["Brasil"].items():
         # ==================================================
         # MUNICÍPIOS
         # ==================================================
-
         for municipio, semaforos in municipios.items():
 
-            # Lista que armazenará os dados da tabela.
             dados_semaforos = []
 
-            # Variáveis acumuladoras municipais.
             fluxo_municipio = 0
             emergencias_municipio = 0
 
-            # ==============================================
-            # SEMÁFOROS
-            # ==============================================
-
+            # Simula cada semáforo
             for semaforo in semaforos:
 
-                # Executa a lógica inteligente do semáforo.
                 dados = executar_semaforo(semaforo)
 
-                # Adiciona os dados na tabela.
+                # Guarda os dados para a tabela
                 dados_semaforos.append({
                     "Semáforo": dados["Semáforo"],
                     "Fluxo": dados["Fluxo"],
@@ -394,56 +344,40 @@ for regiao, estados in rede["Brasil"].items():
                     "Vermelho (s)": dados["Vermelho (s)"]
                 })
 
-                # ==========================================
-                # FLUXO MUNICIPAL
-                # ==========================================
-                # O fluxo municipal é calculado pela soma
-                # dos fluxos dos semáforos.
-                # ==========================================
-
+                # Soma fluxo municipal
                 fluxo_municipio += dados["Fluxo"]
 
-                # Contabiliza emergências municipais.
+                # Conta emergências
                 if dados["Emergência"]:
                     emergencias_municipio += 1
 
-            # ==============================================
-            # FLUXO ESTADUAL
-            # ==============================================
-            # O fluxo estadual é obtido pela soma dos
-            # fluxos municipais.
-            # ==============================================
-
+            # Atualiza dados estaduais
             fluxo_estado += fluxo_municipio
 
-            total_emergencias_estado += emergencias_municipio
+            total_emergencias_estado += (
+                emergencias_municipio
+            )
 
             total_semaforos_estado += len(semaforos)
 
             # ==============================================
-            # CARD DO MUNICÍPIO (CORRIGIDO)
+            # CARD DO MUNICÍPIO
             # ==============================================
-            # Utiliza border=True para garantir que
-            # métricas, alertas e tabela permaneçam
-            # dentro do mesmo bloco visual.
-            # ==============================================
+            with st.container():
 
-            with st.container(border=True):
-
-                # Nome do município
                 st.markdown(
-                    f"""
-                    <div class="municipio">
-                        🏙️ MUNICÍPIO: {municipio}
-                    </div>
-                    """,
+                    '<div class="card-municipio">',
                     unsafe_allow_html=True
                 )
 
-                # ==========================================
-                # MÉTRICAS MUNICIPAIS
-                # ==========================================
+                st.markdown(
+                    f'<div class="municipio">'
+                    f'🏙️ MUNICÍPIO: {municipio}'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
 
+                # Métricas do município
                 col1, col2, col3 = st.columns(3)
 
                 col1.metric(
@@ -461,15 +395,13 @@ for regiao, estados in rede["Brasil"].items():
                     emergencias_municipio
                 )
 
-                # ==========================================
-                # ALERTA DE CONGESTIONAMENTO
-                # ==========================================
-
+                # Identifica congestionamento
                 if fluxo_municipio > 200:
 
                     st.warning(
                         "⚠️ Congestionamento detectado.\n"
-                        "Aumentar tempo verde nas vias principais."
+                        "Aumentar tempo verde nas "
+                        "vias principais."
                     )
 
                 else:
@@ -478,24 +410,21 @@ for regiao, estados in rede["Brasil"].items():
                         "✅ Fluxo dentro da normalidade."
                     )
 
-                # ==========================================
-                # TABELA DOS SEMÁFOROS
-                # ==========================================
-                # Cada município possui sua própria tabela.
-                # ==========================================
-
+                # Exibe a tabela
                 st.dataframe(
                     pd.DataFrame(dados_semaforos),
                     use_container_width=True,
                     hide_index=True
                 )
 
-        # ==================================================
-        # RESUMO ESTADUAL
-        # ==================================================
-        # Exibe os indicadores consolidados do estado.
-        # ==================================================
+                st.markdown(
+                    '</div>',
+                    unsafe_allow_html=True
+                )
 
+        # ==================================================
+        # RESUMO DO ESTADO
+        # ==================================================
         st.markdown("### 📊 Resumo Estadual")
 
         c1, c2, c3 = st.columns(3)
@@ -516,35 +445,29 @@ for regiao, estados in rede["Brasil"].items():
         )
 
         # ==================================================
-        # DECISÕES ESTADUAIS
+        # TOMADA DE DECISÃO ESTADUAL
         # ==================================================
-        # Caso o fluxo estadual seja elevado,
-        # o sistema sugere ações de gerenciamento.
-        # ==================================================
-
+        # Caso o fluxo seja elevado,
+        # o sistema sugere ações estratégicas.
         if fluxo_estado > 500:
 
             st.error(
                 "🚨 DECISÃO ESTADUAL\n\n"
-                "- Sincronizar semáforos dos municípios\n"
-                "- Priorizar corredores de ônibus\n"
-                "- Gerar alerta para o centro regional"
+                "- Sincronizar semáforos "
+                "dos municípios\n"
+                "- Priorizar corredores "
+                "de ônibus\n"
+                "- Gerar alerta para o "
+                "centro regional"
             )
 
         else:
 
             st.info(
-                "ℹ️ Operação estadual dentro dos parâmetros normais."
+                "ℹ️ Operação estadual dentro "
+                "dos parâmetros normais."
             )
 
-        # Linha divisória entre estados.
+        # Linha divisória entre estados
         st.divider()
-
-# ==========================================================
-# FIM DO SISTEMA
-# ==========================================================
-# Ao final da execução, o painel apresenta uma visão
-# completa do funcionamento da rede nacional de
-# semáforos inteligentes, auxiliando gestores na
-# tomada de decisão em diferentes níveis hierárquicos.
-# ==========================================================
+```
