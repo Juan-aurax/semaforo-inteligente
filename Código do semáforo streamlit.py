@@ -3,13 +3,75 @@ import streamlit as st
 import pandas as pd
 from random import randint
 
+# ==========================
+# CONFIGURAÇÃO DA PÁGINA
+# ==========================
 st.set_page_config(
     page_title="Centro Nacional de Controle de Trânsito",
     page_icon="🚦",
     layout="wide"
 )
 
+# ==========================
+# ESTILOS (CSS)
+# ==========================
+st.markdown("""
+<style>
+.brasil {
+    background-color: #0B3D91;
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.regiao {
+    background-color: #2E8B57;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.estado {
+    background-color: #FF8C00;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+.card-municipio {
+    border: 2px solid #8A2BE2;
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    background-color: rgba(138, 43, 226, 0.05);
+}
+
+.municipio {
+    color: #8A2BE2;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.small-text {
+    color: gray;
+    font-size: 14px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ==========================
 # TOPOLOGIA DA REDE
+# ==========================
 rede = {
     "Brasil": {
         "Sudeste": {
@@ -29,8 +91,9 @@ rede = {
     }
 }
 
-
+# ==========================
 # FUNÇÕES
+# ==========================
 def calcular_tempo_verde(fluxo):
     if fluxo < 20:
         return 20
@@ -71,11 +134,13 @@ def verificar_configuracao(rede):
 def executar_semaforo(id_semaforo):
     fluxo = randint(5, 150)
 
-    if detectar_emergencia():
-        modo = "EMERGÊNCIA"
+    emergencia = detectar_emergencia()
+
+    if emergencia:
+        modo = "🚑 Emergência"
         tempo_verde = 120
     else:
-        modo = "NORMAL"
+        modo = "🟢 Normal"
         tempo_verde = calcular_tempo_verde(fluxo)
 
     return {
@@ -84,75 +149,178 @@ def executar_semaforo(id_semaforo):
         "Modo": modo,
         "Verde (s)": tempo_verde,
         "Amarelo (s)": 5,
-        "Vermelho (s)": 30
+        "Vermelho (s)": 30,
+        "Emergência": emergencia
     }
 
 
+# ==========================
 # INTERFACE
+# ==========================
 st.title("🚦 Centro Nacional de Controle de Trânsito")
 st.write("Sistema Inteligente de Gerenciamento de Semáforos")
 
-# Verificação da rede
-if not verificar_configuracao(rede):
-    st.error("Configuração da rede inválida.")
-    st.stop()
-
 # Sidebar
-st.sidebar.header("Controle")
+st.sidebar.header("⚙️ Controle")
+
 executar = st.sidebar.button("▶ Executar Simulação")
 
-# Exibe a topologia
-with st.expander("Topologia da Rede"):
+with st.sidebar.expander("🌎 Topologia da Rede"):
     st.json(rede)
 
-if executar:
-    for regiao, estados in rede["Brasil"].items():
+# Verificação
+if not verificar_configuracao(rede):
+    st.error("❌ Configuração da rede inválida.")
+    st.stop()
 
-        st.header(f"Região: {regiao}")
+if not executar:
+    st.info("Clique em **Executar Simulação** para iniciar o monitoramento.")
+    st.stop()
 
-        for estado, municipios in estados.items():
+# ==========================
+# BRASIL
+# ==========================
+st.markdown(
+    '<div class="brasil">🇧🇷 BRASIL</div>',
+    unsafe_allow_html=True
+)
 
-            fluxo_estado = 0
+# ==========================
+# PROCESSAMENTO
+# ==========================
+for regiao, estados in rede["Brasil"].items():
 
-            st.subheader(f"Estado: {estado}")
+    st.markdown(
+        f'<div class="regiao">🌎 REGIÃO: {regiao}</div>',
+        unsafe_allow_html=True
+    )
+
+    for estado, municipios in estados.items():
+
+        fluxo_estado = 0
+        total_emergencias_estado = 0
+        total_semaforos_estado = 0
+
+        st.markdown(
+            f'<div class="estado">🏛️ ESTADO: {estado}</div>',
+            unsafe_allow_html=True
+        )
+
+        # MUNICÍPIOS
+        for municipio, semaforos in municipios.items():
 
             dados_semaforos = []
 
-            for municipio, semaforos in municipios.items():
+            fluxo_municipio = 0
+            emergencias_municipio = 0
 
-                fluxo_municipio = randint(100, 1000)
-                fluxo_estado += fluxo_municipio
+            for semaforo in semaforos:
 
-                st.markdown(f"### Município: {municipio}")
-                st.write(f"Fluxo Municipal: **{fluxo_municipio} veículos**")
+                dados = executar_semaforo(semaforo)
 
-                if fluxo_municipio > 700:
-                    st.warning(
-                        "Congestionamento detectado. "
-                        "Aumentar tempo verde nas vias principais."
-                    )
+                dados_semaforos.append({
+                    "Semáforo": dados["Semáforo"],
+                    "Fluxo": dados["Fluxo"],
+                    "Modo": dados["Modo"],
+                    "Verde (s)": dados["Verde (s)"],
+                    "Amarelo (s)": dados["Amarelo (s)"],
+                    "Vermelho (s)": dados["Vermelho (s)"]
+                })
 
-                for semaforo in semaforos:
-                    dados_semaforos.append(
-                        executar_semaforo(semaforo)
-                    )
+                fluxo_municipio += dados["Fluxo"]
 
-            st.dataframe(
-                pd.DataFrame(dados_semaforos),
-                use_container_width=True
-            )
+                if dados["Emergência"]:
+                    emergencias_municipio += 1
 
-            st.success(
-                f"Fluxo Total do Estado: {fluxo_estado} veículos"
-            )
+            fluxo_estado += fluxo_municipio
+            total_emergencias_estado += emergencias_municipio
+            total_semaforos_estado += len(semaforos)
 
-            if fluxo_estado > 1500:
-                st.error(
-                    "DECISÃO ESTADUAL:\n\n"
-                    "- Sincronizar semáforos\n"
-                    "- Priorizar corredores de ônibus\n"
-                    "- Gerar alerta ao centro regional"
+            # CARD DO MUNICÍPIO
+            with st.container():
+
+                st.markdown(
+                    '<div class="card-municipio">',
+                    unsafe_allow_html=True
                 )
 
-else:
-    st.info("Clique em 'Executar Simulação' para iniciar o monitoramento.")
+                st.markdown(
+                    f'<div class="municipio">🏙️ MUNICÍPIO: {municipio}</div>',
+                    unsafe_allow_html=True
+                )
+
+                # MÉTRICAS
+                col1, col2, col3 = st.columns(3)
+
+                col1.metric(
+                    "🚗 Fluxo Municipal",
+                    f"{fluxo_municipio} veículos"
+                )
+
+                col2.metric(
+                    "🚦 Semáforos",
+                    len(semaforos)
+                )
+
+                col3.metric(
+                    "🚑 Emergências",
+                    emergencias_municipio
+                )
+
+                # ALERTA DE CONGESTIONAMENTO
+                if fluxo_municipio > 200:
+                    st.warning(
+                        "⚠️ Congestionamento detectado.\n"
+                        "Aumentar tempo verde nas vias principais."
+                    )
+                else:
+                    st.success(
+                        "✅ Fluxo dentro da normalidade."
+                    )
+
+                # TABELA DO MUNICÍPIO
+                st.dataframe(
+                    pd.DataFrame(dados_semaforos),
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+                st.markdown(
+                    '</div>',
+                    unsafe_allow_html=True
+                )
+
+        # MÉTRICAS DO ESTADO
+        st.markdown("### 📊 Resumo Estadual")
+
+        c1, c2, c3 = st.columns(3)
+
+        c1.metric(
+            "🚗 Fluxo Total",
+            f"{fluxo_estado} veículos"
+        )
+
+        c2.metric(
+            "🚦 Total de Semáforos",
+            total_semaforos_estado
+        )
+
+        c3.metric(
+            "🚑 Emergências",
+            total_emergencias_estado
+        )
+
+        # DECISÕES ESTADUAIS
+        if fluxo_estado > 500:
+            st.error(
+                "🚨 DECISÃO ESTADUAL\n\n"
+                "- Sincronizar semáforos dos municípios\n"
+                "- Priorizar corredores de ônibus\n"
+                "- Gerar alerta para o centro regional"
+            )
+        else:
+            st.info(
+                "ℹ️ Operação estadual dentro dos parâmetros normais."
+            )
+
+        st.divider()
