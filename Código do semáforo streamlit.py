@@ -362,18 +362,10 @@ for regiao, estados in rede["Brasil"].items():
             # ==============================================
             # CARD DO MUNICÍPIO
             # ==============================================
-            with st.container():
+            with st.container(border=True):
 
                 st.markdown(
-                    '<div class="card-municipio">',
-                    unsafe_allow_html=True
-                )
-
-                st.markdown(
-                    f'<div class="municipio">'
                     f'🏙️ MUNICÍPIO: {municipio}'
-                    f'</div>',
-                    unsafe_allow_html=True
                 )
 
                 # Métricas do município
