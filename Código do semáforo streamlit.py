@@ -247,6 +247,8 @@ st.write(
     "Sistema Inteligente de Gerenciamento de Semáforos"
 )
 
+contador = st.empty()
+
 # ==========================================================
 # MENU LATERAL
 # ==========================================================
@@ -291,6 +293,10 @@ if not st.session_state.executando:
 
     st.stop()
 
+contador.info(
+    f"⏳ Próxima atualização em "
+    f"{st.session_state.tempo_restante} segundos"
+)
 
 # ==========================================================
 # CABEÇALHO NACIONAL
@@ -470,7 +476,25 @@ for regiao, estados in rede["Brasil"].items():
         # Linha divisória entre estados
         st.divider()
         
-# Atualização automática a cada 20 segundos
+# ==========================================================
+# TEMPORIZADOR E ATUALIZAÇÃO AUTOMÁTICA
+# ==========================================================
 if st.session_state.executando:
-    time.sleep(20)
+
+    for segundos in range(
+        st.session_state.tempo_restante,
+        0,
+        -1
+    ):
+
+        contador.info(
+            f"⏳ Próxima atualização em "
+            f"{segundos} segundos"
+        )
+
+        st.session_state.tempo_restante = segundos
+
+        time.sleep(1)
+
+    st.session_state.tempo_restante = 20
     st.rerun()
